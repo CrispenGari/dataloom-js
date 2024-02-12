@@ -1,0 +1,45 @@
+{
+  "name": "dataloom",
+  "version": "0.0.1",
+  "description": "This is an ORM package for typescript and javascript.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/CrispenGari/dataloom-js.git",
+  "author": "Crispen Gari <crispengari@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest --detectOpenHandles",
+    "lint": "tsc && npx standard --fix",
+    "build": "tsup src/index.ts --format esm,cjs --dts"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "standard": {
+    "env": [
+      "mocha",
+      "commonjs",
+      "node",
+      "jest"
+    ]
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.17",
+    "jest": "^29.5.0",
+    "strip-ansi": "^7.1.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  },
+  "resolutions": {
+    "string-width": "4.2.3"
+  }
+}
