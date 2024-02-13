@@ -1,1 +1,2 @@
-export const hello = () => "Hello dataloom";
+export { getConnection } from "./conn";
+export { loom } from "./loom";
