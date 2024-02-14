@@ -8,8 +8,8 @@ class Model {
 
 @Entity({ keepCase: true, tableName: "users" })
 class User extends Model {
-  @PrimaryKeyGeneratedColumn()
-  _id: number = 18;
+  // @PrimaryKeyGeneratedColumn()
+  // _id: number = 18;
 
   @PrimaryKeyColumn<number, "mysql">({
     type: "int",

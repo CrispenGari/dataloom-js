@@ -5,6 +5,7 @@ import { Database } from "sqlite3";
 import { SQLiteStatements } from "../statements/sqlite";
 import { PGStatements } from "../statements/postgres";
 import { MySQLStatements } from "../statements/mysql";
+import { getTableAttributes } from "../utils";
 
 export const loom = async (conn: ConnectionResult, {}) => {
   const { client, dialect } = conn;
@@ -40,33 +41,7 @@ export class Dataloom {
     switch (this.options.conn.dialect) {
       case "mysql":
         entities.forEach((entity) => {
-          const columns: string[] = [];
-          let tableName: string = "";
-          Object.entries(Object.getOwnPropertyDescriptors(new entity()))
-            .map(([key, value]) => ({ ...value.value }))
-            .forEach((attr) => {
-              if (Object.values(attr).length === 1) {
-                tableName = `\`${attr.__tableName__}\``;
-              } else if (Object.values(attr).length === 0) {
-              } else {
-                if (String(attr.attributes).indexOf("AUTO_INCREMENT") !== -1) {
-                  const attributes = String(attr.attributes).replace(
-                    "AUTO_INCREMENT",
-                    "AUTOINCREMENT"
-                  );
-                  columns.push(`\`${attr.columnName}\` ${attributes}`);
-                } else {
-                  columns.push(`\`${attr.columnName}\` ${attr.attributes}`);
-                }
-              }
-            });
-
-          if (!!!tableName) {
-            throw Error(
-              "The table name must contain few characters, None found. Make sure that all your table classes are decorated with @Entity."
-            );
-          }
-
+          const { columns, tableName } = getTableAttributes(entity, dialect);
           if (drop) {
             const sql = MySQLStatements.CREATE_NEW_TABLE(tableName, columns);
             console.log({ sql });
@@ -81,67 +56,28 @@ export class Dataloom {
         break;
       case "postgres":
         entities.forEach((entity) => {
-          const columns: string[] = [];
-          let tableName: string = "";
-          Object.entries(Object.getOwnPropertyDescriptors(new entity()))
-            .map(([key, value]) => ({ ...value.value }))
-            .forEach((attr) => {
-              if (Object.values(attr).length === 1) {
-                tableName = `"${attr.__tableName__}"`;
-              } else if (Object.values(attr).length === 0) {
-              } else {
-                if (String(attr.attributes).indexOf("AUTO_INCREMENT") !== -1) {
-                  const attributes = String(attr.attributes).replace(
-                    "AUTO_INCREMENT",
-                    "AUTO INCREMENT"
-                  );
-                  columns.push(`\`${attr.columnName}\` ${attributes}`);
-                } else {
-                  columns.push(`\`${attr.columnName}\` ${attr.attributes}`);
-                }
-              }
-            });
-          if (!!!tableName) {
-            throw Error(
-              "The table name must contain few characters, None found. Make sure that all your table classes are decorated with @Entity."
-            );
-          }
+          const { columns, tableName } = getTableAttributes(entity, dialect);
           if (drop) {
-            const sql = PGStatements.CREATE_NEW_TABLE(tableName, columns);
+            const sql = MySQLStatements.CREATE_NEW_TABLE(tableName, columns);
             console.log({ sql });
           } else {
-            const sql = PGStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
+            const sql = MySQLStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
               tableName,
               columns
             );
             console.log({ sql });
           }
         });
+
         break;
       case "sqlite":
         entities.forEach((entity) => {
-          const columns: string[] = [];
-          let tableName: string = "";
-          Object.entries(Object.getOwnPropertyDescriptors(new entity()))
-            .map(([key, value]) => ({ ...value.value }))
-            .forEach((attr) => {
-              if (Object.values(attr).length === 1) {
-                tableName = `\`${attr.__tableName__}\``;
-              } else if (Object.values(attr).length === 0) {
-              } else {
-                columns.push(`\`${attr.columnName}\` ${attr.attributes}`);
-              }
-            });
-          if (!!!tableName) {
-            throw Error(
-              "The table name must contain few characters, None found. Make sure that all your table classes are decorated with @Entity."
-            );
-          }
+          const { columns, tableName } = getTableAttributes(entity, dialect);
           if (drop) {
-            const sql = SQLiteStatements.CREATE_NEW_TABLE(tableName, columns);
+            const sql = MySQLStatements.CREATE_NEW_TABLE(tableName, columns);
             console.log({ sql });
           } else {
-            const sql = SQLiteStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
+            const sql = MySQLStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
               tableName,
               columns
             );
@@ -150,7 +86,9 @@ export class Dataloom {
         });
         break;
       default:
-        break;
+        throw Error(
+          "Unknown dialect option, dialect can only be, (postgres, mysql or sqlite)."
+        );
     }
   }
 }
