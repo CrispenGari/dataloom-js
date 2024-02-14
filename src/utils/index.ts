@@ -1,3 +1,8 @@
+import {
+  InvalidTableNameException,
+  NoPrimaryKeyException,
+  TooManyPrimaryKeyException,
+} from "../exceptions";
 import { DialectType } from "../types";
 
 export const inferSQLType = <T>(arg: T) => {
@@ -25,17 +30,17 @@ export const inferSQLType = <T>(arg: T) => {
 
 export const maybeSyncError = (tableName: string, pks: string[]) => {
   if (!!!tableName) {
-    throw Error(
+    throw new InvalidTableNameException(
       "The table name must contain few characters, None found. Make sure that all your table classes are decorated with @Entity."
     );
   }
   if (pks.length === 0) {
-    throw Error(
+    throw new NoPrimaryKeyException(
       `Each and every table decorated with @Entity must have exactly 1 primary key column. None was found in table "${tableName}".`
     );
   }
   if (pks.length !== 1) {
-    throw Error(
+    throw new TooManyPrimaryKeyException(
       `Each and every table decorated with @Entity must have exactly 1 primary key column. Found "${
         pks.length
       }" primary key columns (${pks.join(", ")}) in table "${tableName}".`

@@ -8,14 +8,14 @@ class Model {
 
 @Entity({ keepCase: true, tableName: "users" })
 class User extends Model {
-  // @PrimaryKeyGeneratedColumn()
-  // _id: number = 18;
+  @PrimaryKeyGeneratedColumn()
+  _id: number = 18;
 
   @PrimaryKeyColumn<number, "mysql">({
     type: "int",
     autoIncrement: true,
   })
-  id: number = 10;
+  id: number;
 
   @Column<string, "mysql">({
     type: "varchar",
@@ -24,7 +24,7 @@ class User extends Model {
     nullable: false,
     unique: true,
   })
-  name: string = "hello";
+  name: string;
 
   @Column<string, "mysql">({
     name: "username",
@@ -32,15 +32,13 @@ class User extends Model {
     nullable: false,
     unique: true,
   })
-  username: string = "hello";
+  username!: string;
 
   @Column()
-  email: string = "hello";
+  email: string;
 
   @Column()
-  age: number = 45;
-
-  bob: Date = new Date();
+  age: number;
 }
 
 (async () => {
