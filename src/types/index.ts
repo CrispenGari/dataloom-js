@@ -26,3 +26,75 @@ export type ConnectionResult =
   | { client: mysql.PoolConnection; dialect: "mysql" }
   | { client: pg.PoolClient; dialect: "postgres" }
   | { client: sqlite3.Database; dialect: "sqlite" };
+
+// sql datatypes
+
+export type TSQLiteTypes =
+  | "int"
+  | "smallint"
+  | "bigint"
+  | "float"
+  | "double precision"
+  | "numeric"
+  | "text"
+  | "varchar"
+  | "char"
+  | "boolean"
+  | "date"
+  | "time"
+  | "timestamp"
+  | "json"
+  | "blob";
+
+export type TMySQLTypes =
+  | "int"
+  | "smallint"
+  | "bigint"
+  | "float"
+  | "double"
+  | "numeric"
+  | "text"
+  | "varchar"
+  | "char"
+  | "boolean"
+  | "date"
+  | "time"
+  | "timestamp"
+  | "json"
+  | "blob";
+
+export type TPGTypes =
+  | "int"
+  | "smallint"
+  | "bigint"
+  | "serial"
+  | "bigserial"
+  | "smallserial"
+  | "float"
+  | "double precision"
+  | "numeric"
+  | "text"
+  | "varchar"
+  | "char"
+  | "boolean"
+  | "date"
+  | "time"
+  | "timestamp"
+  | "interval"
+  | "uuid"
+  | "json"
+  | "jsonb"
+  | "bytea"
+  | "array"
+  | "inet"
+  | "cidr"
+  | "macaddr"
+  | "tsvector"
+  | "point"
+  | "line"
+  | "lseg"
+  | "box"
+  | "path"
+  | "polygon"
+  | "circle"
+  | "hstore";
