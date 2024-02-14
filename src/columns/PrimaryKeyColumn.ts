@@ -26,25 +26,18 @@ export const PrimaryKeyColumn = <TColumDataType, TDialect extends DialectType>(
     return function (args: V): any {
       let type: string = "";
       if (typeof opts === "undefined") {
-        type = `${inferSQLType(args)} AUTO_INCREMENT`;
+        type = `${inferSQLType(args)}`;
       } else if (!!!opts?.type) {
-        const t = inferSQLType(args);
-        type = `${t}${
-          opts?.autoIncrement
-            ? " AUTO_INCREMENT"
-            : t === "INT"
-            ? " AUTO_INCREMENT"
-            : ""
-        }`;
+        type = inferSQLType(args);
       } else {
-        type = `${opts.type.toUpperCase()} PRIMARY KEY${
-          opts?.length ? `(${opts.length})` : ""
-        }${opts?.autoIncrement ? " AUTO_INCREMENT" : ""}`;
+        type = opts.type;
       }
       return {
-        attributes: `${type}${opts?.unique ? " UNIQUE" : ""}${
-          opts?.nullable ? "" : " NOT NULL"
-        }`,
+        attributes: {
+          ...opts,
+          type: type.toUpperCase(),
+          pkField: true,
+        },
         columnName: String(opts?.name ? opts?.name : ctx.name),
       };
     };

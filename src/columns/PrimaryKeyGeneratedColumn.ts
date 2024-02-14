@@ -13,7 +13,12 @@ export const PrimaryKeyGeneratedColumn = <TColumDataType extends number>(
   ) {
     return function (args: V): any {
       return {
-        attributes: `INT PRIMARY KEY UNIQUE NOT NULL`,
+        attributes: {
+          ...opts,
+          type: "INT",
+          pkField: true,
+          autoIncrement: true,
+        },
         columnName: String(opts?.name ? opts?.name : ctx.name),
       };
     };

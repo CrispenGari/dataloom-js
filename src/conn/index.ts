@@ -11,11 +11,11 @@ import {
 
 export async function getConnection(
   options: PostgresConnectionOptions
-): Promise<{ client: pg.PoolClient; dialect: "postgres" }>;
+): Promise<{ client: pg.Pool; dialect: "postgres" }>;
 
 export async function getConnection(
   options: MysqlConnectionOptions
-): Promise<{ client: mysql.PoolConnection; dialect: "mysql" }>;
+): Promise<{ client: mysql.Pool; dialect: "mysql" }>;
 
 export async function getConnection(
   options: SQLiteConnectionOptions
@@ -25,16 +25,12 @@ export async function getConnection(
   options: ConnectionOptions
 ): Promise<ConnectionResult> {
   if (options.dialect === "mysql") {
-    const client = await mysql
-      .createPool({
-        ...options.config,
-      })
-      .getConnection();
+    const client = await mysql.createPool({ ...options.config });
     return { client, dialect: options.dialect };
   } else if (options.dialect === "postgres") {
     const client = await new pg.Pool({
       ...options.config,
-    }).connect();
+    });
 
     return { client, dialect: options.dialect };
   }

@@ -56,9 +56,6 @@ export const getTableAttributes = (entity: any, dialect: DialectType) => {
   Object.entries(Object.getOwnPropertyDescriptors(new entity()))
     .map(([key, value]) => ({ ...value.value }))
     .forEach((attr) => {
-      if (String(attr.attributes).indexOf("PRIMARY KEY") !== -1) {
-        pks.push(attr.columnName);
-      }
       if (Object.values(attr).length === 1) {
         tableName =
           dialect === "postgres"
@@ -66,30 +63,58 @@ export const getTableAttributes = (entity: any, dialect: DialectType) => {
             : `\`${attr.__tableName__}\``;
       } else if (Object.values(attr).length === 0) {
       } else {
-        if (String(attr.attributes).indexOf("AUTO_INCREMENT") !== -1) {
-          const attributes = String(attr.attributes).replace(
-            "AUTO_INCREMENT",
-            dialect === "mysql"
-              ? "AUTOINCREMENT"
-              : dialect === "postgres"
-              ? "AUTO INCREMENT"
-              : "AUTO_INCREMENT"
-          );
-          columns.push(
-            dialect === "postgres"
-              ? `"${attr.columnName}" ${attributes}`
-              : `\`${attr.columnName}\` ${attributes}`
-          );
+        if (attr.attributes?.pkField) {
+          pks.push(attr.columnName);
+        }
+        if (dialect === "postgres" && attr.attributes?.autoIncrement) {
+          const field_sql = `"${attr.columnName}" BIGSERIAL${
+            attr.attributes?.pkField ? " PRIMARY KEY" : ""
+          }${attr.attributes?.unique ? " UNIQUE" : ""}${
+            attr.attributes?.nullable ? "" : " NOT NULL"
+          }${
+            attr.attributes?.defaultValue
+              ? `DEFAULT '${attr.attributes.defaultValue}'`
+              : ""
+          }`;
+          columns.push(field_sql);
         } else {
-          columns.push(
-            dialect === "postgres"
-              ? `"${attr.columnName}" ${attr.attributes}`
-              : `\`${attr.columnName}\` ${attr.attributes}`
-          );
+          if (dialect === "postgres") {
+            const field_sql = `"${attr.columnName}" ${attr.attributes.type}${
+              attr.attributes?.pkField ? " PRIMARY KEY" : ""
+            }${attr.attributes?.unique ? " UNIQUE" : ""}${
+              attr.attributes?.nullable ? "" : " NOT NULL"
+            }${
+              attr.attributes?.defaultValue
+                ? ` DEFAULT '${attr.attributes.defaultValue}'`
+                : ""
+            }`;
+            columns.push(field_sql);
+          } else if (dialect === "mysql") {
+            const field_sql = `\`${attr.columnName}\` ${attr.attributes.type}${
+              attr.attributes?.autoIncrement ? " AUTO_INCREMENT" : ""
+            }${attr.attributes?.pkField ? " PRIMARY KEY" : ""}${
+              attr.attributes?.unique ? " UNIQUE" : ""
+            }${attr.attributes?.nullable ? "" : " NOT NULL"}${
+              attr.attributes?.defaultValue
+                ? ` DEFAULT '${attr.attributes.defaultValue}'`
+                : ""
+            }`;
+            columns.push(field_sql);
+          } else {
+            const field_sql = `\`${attr.columnName}\` ${attr.attributes.type}${
+              attr.attributes?.autoIncrement ? " AUTO INCREMENT" : ""
+            }${attr.attributes?.pkField ? " PRIMARY KEY" : ""}${
+              attr.attributes?.unique ? " UNIQUE" : ""
+            }${attr.attributes?.nullable ? "" : " NOT NULL"}${
+              attr.attributes?.defaultValue
+                ? ` DEFAULT '${attr.attributes.defaultValue}'`
+                : ""
+            }`;
+            columns.push(field_sql);
+          }
         }
       }
     });
-
   maybeSyncError(tableName, pks);
   return {
     tableName,

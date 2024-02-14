@@ -34,15 +34,11 @@ export const Column = <TColumDataType, TDialect extends DialectType>(
         }`;
       }
       return {
-        attributes: `${type}${opts?.autoIncrement ? " AUTO_INCREMENT" : ""}${
-          opts?.unique ? " UNIQUE" : ""
-        }${opts?.nullable ? "" : " NOT NULL"}${
-          opts?.defaultValue
-            ? ` DEFAULT ${opts?.defaultValue}`
-            : args
-            ? ` DEFAULT ${args}`
-            : ""
-        }`,
+        attributes: {
+          ...opts,
+          type,
+          defaultValue: opts?.defaultValue || args,
+        },
         columnName: String(opts?.name ? opts.name : ctx.name),
       };
     };

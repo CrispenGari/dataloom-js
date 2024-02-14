@@ -1,13 +1,11 @@
 import { PoolConnection } from "mysql2";
 import { ConnectionResult } from "../types";
-import { PoolClient } from "pg";
 import { Database } from "sqlite3";
-import { SQLiteStatements } from "../statements/sqlite";
-import { PGStatements } from "../statements/postgres";
 import { MySQLStatements } from "../statements/mysql";
 import { getTableAttributes } from "../utils";
-import { inspect } from "util";
 import { UnknownDialectException } from "../exceptions";
+import { SQLiteStatements } from "../statements/sqlite";
+import { PGStatements } from "../statements/postgres";
 
 export const loom = async (conn: ConnectionResult, {}) => {
   const { client, dialect } = conn;
@@ -39,57 +37,84 @@ export class Dataloom {
     const { entities, conn } = this.options;
     switch (this.options.conn.dialect) {
       case "mysql":
-        entities.forEach((entity) => {
+        entities.forEach(async (entity) => {
           const { columns, tableName } = getTableAttributes(
             entity,
             conn.dialect
           );
           if (drop) {
-            const sql = MySQLStatements.CREATE_NEW_TABLE(tableName, columns);
-            console.log({ sql });
-          } else {
-            const sql = MySQLStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
-              tableName,
-              columns
+            await Executor.execute(
+              MySQLStatements.DROP_TABLE(tableName),
+              [],
+              conn
             );
-            console.log({ sql });
+            await Executor.execute(
+              MySQLStatements.CREATE_NEW_TABLE(tableName, columns),
+              [],
+              conn
+            );
+          } else {
+            await Executor.execute(
+              MySQLStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(tableName, columns),
+              [],
+              conn
+            );
           }
         });
         break;
       case "postgres":
-        entities.forEach((entity) => {
+        entities.forEach(async (entity) => {
           const { columns, tableName } = getTableAttributes(
             entity,
             conn.dialect
           );
           if (drop) {
-            const sql = MySQLStatements.CREATE_NEW_TABLE(tableName, columns);
-            console.log({ sql });
-          } else {
-            const sql = MySQLStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
-              tableName,
-              columns
+            await Executor.execute(
+              PGStatements.DROP_TABLE(tableName),
+              [],
+              conn
             );
-            console.log({ sql });
+            await Executor.execute(
+              PGStatements.CREATE_NEW_TABLE(tableName, columns),
+              [],
+              conn
+            );
+          } else {
+            await Executor.execute(
+              PGStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(tableName, columns),
+              [],
+              conn
+            );
           }
         });
 
         break;
       case "sqlite":
-        entities.forEach((entity) => {
+        entities.forEach(async (entity) => {
           const { columns, tableName } = getTableAttributes(
             entity,
             conn.dialect
           );
           if (drop) {
-            const sql = MySQLStatements.CREATE_NEW_TABLE(tableName, columns);
-            console.log({ sql });
-          } else {
-            const sql = MySQLStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
-              tableName,
-              columns
+            await Executor.execute(
+              SQLiteStatements.DROP_TABLE(tableName),
+              [],
+              conn
             );
-            console.log({ sql });
+            await Executor.execute(
+              SQLiteStatements.CREATE_NEW_TABLE(tableName, columns),
+              [],
+              conn
+            );
+          } else {
+            await Executor.execute(
+              SQLiteStatements.CREATE_NEW_TABLE_IF_NOT_EXITS(
+                tableName,
+                columns
+              ),
+              [],
+              conn
+            );
           }
         });
         break;
@@ -102,17 +127,41 @@ export class Dataloom {
 }
 
 class Executor {
-  static execute(sql: string, args: any[], conn: ConnectionResult): void;
-  static execute(sql: string, args: any[], conn: ConnectionResult): void;
-  static execute(sql: string, args: any[], conn: ConnectionResult): void;
-  static execute(sql: string, args: any[], conn: ConnectionResult) {
-    if (conn.client instanceof Database) {
-      return;
+  static async execute<TResults>(
+    sql: string,
+    args: any[],
+    conn: ConnectionResult
+  ): Promise<TResults>;
+  static async execute<TResults>(
+    sql: string,
+    args: any[],
+    conn: ConnectionResult
+  ): Promise<TResults>;
+  static async execute<TResults>(
+    sql: string,
+    args: any[],
+    conn: ConnectionResult
+  ): Promise<TResults>;
+
+  static async execute<TResults>(
+    sql: string,
+    args: any[],
+    conn: ConnectionResult
+  ) {
+    const { client, dialect } = conn;
+    if (client instanceof Database) {
+      const res = await client.exec(sql);
+      return res;
     }
-    if (conn.dialect === "postgres") {
-      conn.client;
+    if (dialect === "postgres") {
+      const res = await client.query(sql);
+      console.log({ res });
+      await client.end();
+      return res;
     } else {
-      conn.client;
+      const res = await client.query(sql);
+      await client.end();
+      return res;
     }
   }
 }

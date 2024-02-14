@@ -8,8 +8,8 @@ class Model {
 
 @Entity({ keepCase: true, tableName: "users" })
 class User extends Model {
-  @PrimaryKeyGeneratedColumn()
-  _id: number = 18;
+  // @PrimaryKeyGeneratedColumn()
+  // _id: number = 18;
 
   @PrimaryKeyColumn<number, "mysql">({
     type: "int",
@@ -23,13 +23,14 @@ class User extends Model {
     length: 255,
     nullable: false,
     unique: true,
+    defaultValue: "Bob",
   })
   name: string;
 
   @Column<string, "mysql">({
     name: "username",
     length: 255,
-    nullable: false,
+    nullable: true,
     unique: true,
   })
   username!: string;
@@ -38,7 +39,7 @@ class User extends Model {
   email: string;
 
   @Column()
-  age: number;
+  age: number = 19;
 }
 
 (async () => {
@@ -51,6 +52,10 @@ class User extends Model {
   //     user: "postgres",
   //   },
   //   dialect: "postgres",
+  // });
+  // const conn = await getConnection({
+  //   config: { filename: "hello" },
+  //   dialect: "sqlite",
   // });
   const conn = await getConnection({
     config: {
@@ -65,5 +70,10 @@ class User extends Model {
   const loom = new Dataloom({ conn, entities: [User], logger: "console" });
   await loom.synchronize({ drop: false });
 
-  conn.client.destroy();
+  // await conn.client.query("SELECT * FROM users;");
+
+  // conn.client.close({ type: "conn", name: "close" }, false);
+
+  // conn.client.destroy();
+  // conn.client.close()
 })();

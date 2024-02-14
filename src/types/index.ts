@@ -23,8 +23,8 @@ export type ConnectionOptions =
   | SQLiteConnectionOptions;
 
 export type ConnectionResult =
-  | { client: mysql.PoolConnection; dialect: "mysql" }
-  | { client: pg.PoolClient; dialect: "postgres" }
+  | { client: mysql.Pool; dialect: "mysql" }
+  | { client: pg.Pool; dialect: "postgres" }
   | { client: sqlite3.Database; dialect: "sqlite" };
 
 // sql datatypes
